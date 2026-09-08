@@ -1,0 +1,4 @@
+{
+  "app": { "title": "Beispiel", "subtitle": "Zweite Zeile" },
+  "form": { "buttons": { "submit": "Senden", "cancel": "Abbrechen" }, "hint": "" }
+}

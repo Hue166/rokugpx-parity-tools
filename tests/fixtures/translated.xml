@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_title">Beispiel</string>
+    <string name="form_submit">Senden</string>
+    <string name="form_cancel">Abbrechen</string>
+</resources>
