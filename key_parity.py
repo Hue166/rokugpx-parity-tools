@@ -72,8 +72,25 @@ def load_android_xml(path):
 LOADERS = {"json": load_json, "android-xml": load_android_xml}
 
 
+PLURAL_SUFFIXES = ("_one", "_other")
+
+
+def covered_by_base(key, keys):
+    """X_one / X_other is covered when `keys` has the base key X.
+
+    English splits a count string into plural forms; Japanese has one form and
+    keeps only X. A plural key whose base is absent is still reported.
+    """
+    for suffix in PLURAL_SUFFIXES:
+        if key.endswith(suffix) and key[: -len(suffix)] in keys:
+            return True
+    return False
+
+
 def compare(base, other):
-    return sorted(set(base) - set(other)), sorted(set(other) - set(base))
+    def missing(src, dst):
+        return sorted(k for k in set(src) - set(dst) if not covered_by_base(k, dst))
+    return missing(base, other), missing(other, base)
 
 
 def main(argv=None):

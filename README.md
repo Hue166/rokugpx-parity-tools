@@ -20,6 +20,10 @@ Exit codes: `0` key sets match · `1` at least one key missing (each one is name
 
 Nothing is written; the two files are only read.
 
+**Plural keys.** `X_one` / `X_other` count as present when the compared file has the base key
+`X` (English splits a count string into plural forms; Japanese keeps one form under `X`). Applies
+in both directions. A plural key whose base `X` is in neither file is still reported.
+
 ## Why a separate check
 
 A missing key is a different failure from a wrong translation, and comparing values will not

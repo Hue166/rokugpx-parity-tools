@@ -87,5 +87,28 @@ check "json: empty value counts as present -> pass" 0 \
 check "json: unreadable file -> usage error, not pass" 2 \
   python3 "$tool" --format json "$fx/base.json" "$fx/does-not-exist.json"
 
+# 9. Plural forms. English splits a count string into X_one / X_other; Japanese
+#    has one form and keeps only X. When the compared file has the base key X,
+#    X_one / X_other are covered, in either direction.
+check "json: X_one/X_other covered by base X in other -> pass" 0 \
+  python3 "$tool" --format json "$fx/plural_base.json" "$fx/plural_en.json"
+check "json: same, files swapped -> pass" 0 \
+  python3 "$tool" --format json "$fx/plural_en.json" "$fx/plural_base.json"
+
+# 10. The control for 9: a plural key whose base exists in neither file is an
+#     ordinary missing key. Without this, "passes on 9" cannot be told apart
+#     from "ignores every key ending in _one".
+check "json: X_one with no base X anywhere -> fail" 1 \
+  python3 "$tool" --format json "$fx/plural_base.json" "$fx/plural_orphan.json"
+names "list.noun_one" \
+  python3 "$tool" --format json "$fx/plural_base.json" "$fx/plural_orphan.json"
+
+# 11. The base key itself is not exempt. If X is missing, X and its plural
+#     forms are all reported.
+check "json: base X missing, only plural forms present -> fail" 1 \
+  python3 "$tool" --format json "$fx/plural_base_missing.json" "$fx/plural_en.json"
+names "MISSING in other: list.count_one" \
+  python3 "$tool" --format json "$fx/plural_en.json" "$fx/plural_base_missing.json"
+
 printf '\n%s passed, %s failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]
