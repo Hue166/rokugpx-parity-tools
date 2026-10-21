@@ -20,6 +20,13 @@ Exit codes: `0` key sets match · `1` at least one key missing (each one is name
 
 Nothing is written; the two files are only read.
 
+**Plural keys.** `X_one` / `X_other` is a plural variant when its own file also has a sibling
+(the base key `X` or the other form), and a plural variant need not exist in the compared file.
+Applies in both directions. A key ending in `_one` / `_other` with no sibling is an ordinary key
+(e.g. `auth.error_other`), and a missing base `X` is still reported.
+In RokuGPX, plural variants are an English-only convention: callers look them up inside a
+`lang == .en` branch (C-557 / C-653).
+
 ## Why a separate check
 
 A missing key is a different failure from a wrong translation, and comparing values will not

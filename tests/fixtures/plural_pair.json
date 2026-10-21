@@ -1,0 +1,8 @@
+{
+  "list": {
+    "title": "List",
+    "count": "%d items",
+    "noun_one": "item",
+    "noun_other": "items"
+  }
+}

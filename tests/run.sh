@@ -87,5 +87,38 @@ check "json: empty value counts as present -> pass" 0 \
 check "json: unreadable file -> usage error, not pass" 2 \
   python3 "$tool" --format json "$fx/base.json" "$fx/does-not-exist.json"
 
+# 9. Plural forms. English splits a count string into X_one / X_other; Japanese
+#    has one form. X_one / X_other is a plural variant when its own file also
+#    has a sibling (base X or the other form), and then it need not exist in
+#    the compared file. Both shapes found in the iOS locales are pinned, in
+#    either direction.
+check "json: X + X_one (no X_other) vs X only -> pass" 0 \
+  python3 "$tool" --format json "$fx/plural_base.json" "$fx/plural_base_one.json"
+check "json: X_one + X_other (no base X) vs nothing -> pass" 0 \
+  python3 "$tool" --format json "$fx/plural_base.json" "$fx/plural_pair.json"
+check "json: X + X_one + X_other vs X only -> pass" 0 \
+  python3 "$tool" --format json "$fx/plural_base.json" "$fx/plural_en.json"
+check "json: same, files swapped -> pass" 0 \
+  python3 "$tool" --format json "$fx/plural_pair.json" "$fx/plural_base.json"
+
+# 10. The controls for 9: a key ending in _one or _other with no sibling in
+#     its own file is an ordinary key (e.g. `auth.error_other` means "other
+#     error", not a plural). Without these, "passes on 9" cannot be told apart
+#     from "ignores every key ending in _one / _other".
+check "json: X_one with no sibling -> fail" 1 \
+  python3 "$tool" --format json "$fx/plural_base.json" "$fx/plural_orphan.json"
+names "list.noun_one" \
+  python3 "$tool" --format json "$fx/plural_base.json" "$fx/plural_orphan.json"
+check "json: X_other with no sibling -> fail" 1 \
+  python3 "$tool" --format json "$fx/plural_base.json" "$fx/plural_other_orphan.json"
+names "list.error_other" \
+  python3 "$tool" --format json "$fx/plural_base.json" "$fx/plural_other_orphan.json"
+
+# 11. The base key itself is not exempt. If X is missing, it is reported.
+check "json: base X missing -> fail" 1 \
+  python3 "$tool" --format json "$fx/plural_base_missing.json" "$fx/plural_en.json"
+names "MISSING in other: list.count$" \
+  python3 "$tool" --format json "$fx/plural_en.json" "$fx/plural_base_missing.json"
+
 printf '\n%s passed, %s failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]

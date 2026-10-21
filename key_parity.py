@@ -72,8 +72,29 @@ def load_android_xml(path):
 LOADERS = {"json": load_json, "android-xml": load_android_xml}
 
 
+PLURAL_SUFFIXES = ("_one", "_other")
+
+
+def is_plural_variant(key, keys):
+    """X_one / X_other is a plural variant when `keys` (its own file) also has a
+    sibling: the base key X or the other plural form.
+
+    English splits a count string into plural forms; Japanese has one form, so
+    the variants need not exist in the compared file. A key ending in _one or
+    _other with no sibling is an ordinary key (e.g. `auth.error_other`).
+    """
+    for suffix in PLURAL_SUFFIXES:
+        if key.endswith(suffix):
+            stem = key[: -len(suffix)]
+            siblings = [stem] + [stem + s for s in PLURAL_SUFFIXES if s != suffix]
+            return any(s in keys for s in siblings)
+    return False
+
+
 def compare(base, other):
-    return sorted(set(base) - set(other)), sorted(set(other) - set(base))
+    def missing(src, dst):
+        return sorted(k for k in set(src) - set(dst) if not is_plural_variant(k, src))
+    return missing(base, other), missing(other, base)
 
 
 def main(argv=None):
